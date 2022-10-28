@@ -1,9 +1,7 @@
 package com.example.yachtRent.advice;
 
 
-import com.example.yachtRent.exception.InvalidCredentialsException;
-import com.example.yachtRent.exception.UserIsMissingException;
-import com.example.yachtRent.exception.YachtIsMissingException;
+import com.example.yachtRent.exception.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -29,5 +27,17 @@ public class MyControllerAdvice {
         return new ResponseEntity<String>("Wrong username or password.", HttpStatus.BAD_REQUEST);
 
     }
+    @ExceptionHandler(RoleIsMissingException.class)
+    public ResponseEntity<String> handleMissingUser(RoleIsMissingException roleIsMissingException) {
+
+        return new ResponseEntity<String>("There is no role like this", HttpStatus.BAD_REQUEST);
+
+    }
+    @ExceptionHandler(RoleAlreadyAddedToUserException.class)
+        public ResponseEntity<String> handleMissingUser(RoleAlreadyAddedToUserException roleAlreadyAddedToUserException) {
+
+            return new ResponseEntity<String>("This user Already has this role", HttpStatus.BAD_REQUEST);
+
+        }
 
 }

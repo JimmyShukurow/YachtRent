@@ -5,6 +5,7 @@ import com.example.yachtRent.entity.UserEntity;
 import com.example.yachtRent.model.User;
 import com.example.yachtRent.request.LoginRequest;
 import com.example.yachtRent.request.RegisterRequest;
+import com.example.yachtRent.request.UserRoleRequest;
 import com.example.yachtRent.service.UserService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -53,6 +54,12 @@ public class UserController {
         var id = (Long) request.getAttribute("userId");
         userService.logout(id);
         return ResponseEntity.ok("Bye bye");
+    }
+
+    @PutMapping("users/add-role")
+    public ResponseEntity<String> giveRoleToUser(@RequestBody UserRoleRequest userRoleRequest) {
+        userService.addRoleToUser(userRoleRequest.getUserId(), userRoleRequest.getRoleId());
+        return ResponseEntity.ok("Role has been given to use");
     }
 
 

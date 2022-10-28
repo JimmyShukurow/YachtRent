@@ -4,6 +4,8 @@ import com.example.yachtRent.entity.RoleEntity;
 import com.example.yachtRent.entity.UserEntity;
 import com.example.yachtRent.entity.UserRoleEntity;
 import com.example.yachtRent.exception.InvalidCredentialsException;
+import com.example.yachtRent.exception.RoleAlreadyAddedToUserException;
+import com.example.yachtRent.exception.RoleIsMissingException;
 import com.example.yachtRent.exception.UserIsMissingException;
 import com.example.yachtRent.repository.RoleRepository;
 import com.example.yachtRent.repository.UserRepository;
@@ -13,14 +15,16 @@ import com.example.yachtRent.request.RegisterRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import java.util.List;
+
+import javax.crypto.SecretKeyFactory;
+import javax.crypto.spec.PBEKeySpec;
+
 
 @Service
 @Slf4j
@@ -119,6 +123,16 @@ public class UserService {
     }
 
     public void addRoleToUser(Long userId, Long roleId) {
+        var user = userRepository.findById(userId);
+        var role = roleRepository.findById(roleId);
+        var roleUser = userRoleRepository.findByUserIdAndRoleId(userId, roleId);
+        if (user.isEmpty()) {
+            throw new UserIsMissingException();
+        }
+        if (roleUser.isPresent()) {
+            throw new RoleAlreadyAddedToUserException();
+        }
+
         var userRoleEntity = new UserRoleEntity();
         userRoleEntity.setUserId(userId);
         userRoleEntity.setRoleId(roleId);
@@ -127,6 +141,13 @@ public class UserService {
 
     public boolean validateRole(Long user_id, String roleName) {
         var role = roleRepository.findByName(roleName);
+        if(role == null){
+            throw new RoleIsMissingException();
+        }
+        var user = userRepository.findById(user_id);
+        if (user.isEmpty()) {
+            throw new UserIsMissingException();
+        }
         var entity = userRoleRepository.findByUserIdAndRoleId(user_id, role.getId());
         if (entity.isEmpty()) {
             return false;

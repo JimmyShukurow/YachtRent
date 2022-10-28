@@ -20,8 +20,11 @@ public class TokenFilter extends OncePerRequestFilter {
     public static final String AUTH_HEADER = "Authorization";
     public static final String LOGIN_PATH = "/api/v1/users/login";
     public static final String REGISTER_PATH = "/api/v1/users/register";
-
     public static final String YACHT_PATH = "/api/v1/yachts/**";
+    private static final String ADD_ROLE_TO_USER_PATH = "/api/v1/users/add-role";
+
+
+
 
     private UserService userService;
     private SecurityConfiguration securityConfiguration;
@@ -34,28 +37,27 @@ public class TokenFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        log.info(request.getRequestURI());
-        boolean test = securityConfiguration.allowedPattern(request.getRequestURI(), YACHT_PATH);
-        log.info(String.valueOf(test));
 
         if (
                 request.getMethod().equalsIgnoreCase("option") ||
                 request.getRequestURI().equals(LOGIN_PATH) ||
-                request.getRequestURI().equals(REGISTER_PATH)
-                )
+                request.getRequestURI().equals(REGISTER_PATH) ||
+                (securityConfiguration.allowedPattern(request.getRequestURI(), YACHT_PATH)&& request.getMethod().equalsIgnoreCase("get"))
+            )
         {
             filterChain.doFilter(request, response);
             return;
         }
 
         var token = request.getHeader(AUTH_HEADER);
-        token = token.replace("Bearer ", "");
 
         log.info(token);
         if (token == null || token.isBlank()) {
             response.setStatus(401);
             return;
         }
+        token = token.replace("Bearer ", "");
+
         String[] tokenParts = token.split("_");
         if (tokenParts.length != 2) {
             response.setStatus(401);
@@ -65,6 +67,18 @@ public class TokenFilter extends OncePerRequestFilter {
         var tokenValue = tokenParts[1];
         userService.validateToken(Long.valueOf(id), tokenValue);
         request.setAttribute("userId",Long.parseLong(id));
+
+        log.info(request.getRequestURI());
+        if (
+                (
+                        request.getRequestURI().equals(ADD_ROLE_TO_USER_PATH) ||
+                        request.getMethod().equalsIgnoreCase("put") ||
+                        request.getMethod().equalsIgnoreCase("delete")
+
+                ) && !userService.validateRole(Long.valueOf(id), "admin")) {
+            response.setStatus(403);
+            return;
+        }
         filterChain.doFilter(request, response);
     }
 }

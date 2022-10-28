@@ -15,7 +15,12 @@ public class SecurityConfiguration {
         Matcher matcher = regex.matcher(path);
 
         return matcher.matches();
+
     }
+
+
+
+
 
 
 }

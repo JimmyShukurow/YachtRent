@@ -15,16 +15,6 @@ public class YachtRentApplication {
 		SpringApplication.run(YachtRentApplication.class, args);
 	}
 
-//	@Bean
-//	CommandLineRunner runner(UserService userService) {
-//		return args -> {
-//			var userRequest = new RegisterRequest("admin", "test", "admin@gmail.com", "123456");
-//			userService.register(userRequest);
-//			userService.saveRole("admin");
-//			userService.addRoleToUser(1L,1L);
-//
-//		};
-//	}
 }
 
 
