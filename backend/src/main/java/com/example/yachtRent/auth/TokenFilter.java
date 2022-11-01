@@ -38,8 +38,11 @@ public class TokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
 
+        if(request.getMethod().equalsIgnoreCase("options")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
         if (
-                request.getMethod().equalsIgnoreCase("option") ||
                 request.getRequestURI().equals(LOGIN_PATH) ||
                 request.getRequestURI().equals(REGISTER_PATH) ||
                 (securityConfiguration.allowedPattern(request.getRequestURI(), YACHT_PATH)&& request.getMethod().equalsIgnoreCase("get"))

@@ -1,5 +1,6 @@
 package com.example.yachtRent.service;
 
+import com.example.yachtRent.config.AuthConfiguration;
 import com.example.yachtRent.entity.RoleEntity;
 import com.example.yachtRent.entity.UserEntity;
 import com.example.yachtRent.entity.UserRoleEntity;
@@ -29,17 +30,18 @@ import javax.crypto.spec.PBEKeySpec;
 @Service
 @Slf4j
 public class UserService {
-    private static final String AUTH_SALT = "sdgb43bbwvdv3/&^24g23gwherh34g;as:23524m6";
 
     private UserRepository userRepository;
     private RoleRepository roleRepository;
 
     private UserRoleRepository userRoleRepository;
+    private AuthConfiguration authConfiguration;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository) {
+    public UserService(UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository, AuthConfiguration authConfiguration) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
+        this.authConfiguration = authConfiguration;
     }
 
     public UserEntity register(RegisterRequest registerRequest) {
@@ -57,7 +59,7 @@ public class UserService {
     }
 
     public String hashPassword(String rawPassword) {
-        var spec = new PBEKeySpec(rawPassword.toCharArray(), AUTH_SALT.getBytes(), 65536, 128);
+        var spec = new PBEKeySpec(rawPassword.toCharArray(), authConfiguration.getSalt().getBytes(), 65536, 128);
 
         SecretKeyFactory factory;
         try {
