@@ -77,6 +77,9 @@ public class UserService {
     }
 
     public UserEntity authonticate(LoginRequest loginRequest) {
+        if (loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
+            throw new InvalidCredentialsException();
+        }
         var hashedPassword = hashPassword(loginRequest.getPassword());
         var userEntity = userRepository.findByUsernameAndPassword(loginRequest.getUsername(), hashedPassword);
         if (userEntity.isEmpty()) {

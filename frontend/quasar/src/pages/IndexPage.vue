@@ -1,7 +1,7 @@
 <template>
-  <q-page class="row items-center justify-evenly">
-    <h1>Jimmy is here</h1>
-    <div class="row">
+  <q-page class="column items-center">
+    <h1>Welcome to yacht rentinf site</h1>
+    <div class="row items-center">
       <div v-for="(yacht, id) in yachts" :key="id">
         <YachtComponent :yacht="yacht"></YachtComponent>
       </div>

@@ -1,4 +1,15 @@
 import { RouteRecordRaw } from 'vue-router';
+import { useUserStore } from 'src/stores/user-store';
+import { createPinia } from 'pinia';
+import { createApp } from 'vue';
+import App from '/src/App.vue';
+
+const pinia = createPinia();
+const app = createApp(App);
+app.use(pinia);
+
+const user = useUserStore();
+console.log(user.getToken);
 
 const routes: RouteRecordRaw[] = [
   {
@@ -8,9 +19,18 @@ const routes: RouteRecordRaw[] = [
   },
   {
     path: '/admin',
-    component: () => import('src/layouts/AdminLayout.vue'),
+    component: () =>
+      user.getToken == ''
+        ? import('src/layouts/LoginLayout.vue')
+        : import('src/layouts/AdminLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/admin/AdminHomePage.vue') },
+      {
+        path: '',
+        component: () =>
+          user.getToken == ''
+            ? import('pages/admin/user/LoginPage.vue')
+            : import('pages/admin/AdminHomePage.vue'),
+      },
       {
         path: 'yachts',
         component: () => import('pages/admin/yachts/AllYachts.vue'),
@@ -18,6 +38,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'store-yacht',
         component: () => import('pages/admin/yachts/YachtForm.vue'),
+      },
+      {
+        path: 'login',
+        component: () => import('pages/admin/user/LoginPage.vue'),
       },
     ],
   },

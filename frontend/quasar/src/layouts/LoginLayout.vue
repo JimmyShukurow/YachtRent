@@ -4,9 +4,9 @@
       <q-toolbar>
 
         <q-toolbar-title>
-          Jimmy's App
+          Quasar App
         </q-toolbar-title>
-        <q-btn color="secondary" label="Admin Panel" to="/admin" />
+
       </q-toolbar>
     </q-header>
 
@@ -19,16 +19,16 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue';
+import { defineComponent } from 'vue';
 
 export default defineComponent({
-  name: 'UserLayout',
+  name: 'AdminLayout',
 
 
   setup() {
 
-    return {
 
+    return {
     }
   }
 });
