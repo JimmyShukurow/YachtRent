@@ -11,8 +11,9 @@ import java.math.BigDecimal;
 public class Yacht {
     private String name;
     private  Long typeId;
-    private BigDecimal price;
+    private  BigDecimal price;
     private  String crew;
+    private  String description;
     private  Integer sleepingCapacity;
     private  Integer cruiseCapacity;
 
@@ -22,6 +23,7 @@ public class Yacht {
         yacht.setTypeId(yachtEntity.getTypeId());
         yacht.setPrice(yachtEntity.getPrice());
         yacht.setCrew(yachtEntity.getCrew());
+        yacht.setDescription(yachtEntity.getDescription());
         yacht.setSleepingCapacity(yachtEntity.getSleepingCapacity());
         yacht.setCruiseCapacity(yachtEntity.getCruiseCapacity());
 

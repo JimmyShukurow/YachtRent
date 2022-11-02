@@ -6,7 +6,9 @@ import com.example.yachtRent.request.YachtRequest;
 import com.example.yachtRent.service.YachtService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,6 +49,12 @@ public class YachtController {
         yachtService.deleteYacht(Id);
 
         return ResponseEntity.ok("Yacht by id " + Id + " was deleted");
+    }
+
+    @PostMapping("yachts/upload-image")
+    public ResponseEntity<?> uploadImage(@RequestParam("image") MultipartFile file) throws IOException {
+        var uploadImage = yachtService.uploadImage(file);
+        return ResponseEntity.ok(uploadImage);
     }
 
 }

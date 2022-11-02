@@ -1,0 +1,2 @@
+ALTER TABLE yachts
+ADD COLUMN creator_id INTEGER;
