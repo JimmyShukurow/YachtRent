@@ -1,6 +1,6 @@
 <template>
   <q-page class="column items-center">
-    <h1>Welcome to yacht rentinf site</h1>
+    <h1>Welcome to yacht renting site</h1>
     <div class="row items-center">
       <div v-for="(yacht, id) in yachts" :key="id">
         <YachtComponent :yacht="yacht"></YachtComponent>

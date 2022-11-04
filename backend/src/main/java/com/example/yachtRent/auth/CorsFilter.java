@@ -26,6 +26,7 @@ public class CorsFilter extends OncePerRequestFilter {
             return;
         }
 
+        log.info(request.getHeader("X-FORWARDED-FOR"));
         filterChain.doFilter(request, response);
 
     }

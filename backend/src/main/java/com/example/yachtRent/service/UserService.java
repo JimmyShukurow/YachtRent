@@ -33,15 +33,23 @@ public class UserService {
 
     private UserRepository userRepository;
     private RoleRepository roleRepository;
+    private EmailSenderService emailSenderService;
 
     private UserRoleRepository userRoleRepository;
     private AuthConfiguration authConfiguration;
 
-    public UserService(UserRepository userRepository, RoleRepository roleRepository, UserRoleRepository userRoleRepository, AuthConfiguration authConfiguration) {
+    public UserService(
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            UserRoleRepository userRoleRepository,
+            AuthConfiguration authConfiguration,
+            EmailSenderService emailSenderService
+    ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
         this.authConfiguration = authConfiguration;
+        this.emailSenderService = emailSenderService;
     }
 
     public UserEntity register(RegisterRequest registerRequest) {
@@ -49,7 +57,7 @@ public class UserService {
         userEntity.setFirstName(registerRequest.getFirstName());
         userEntity.setLastName(registerRequest.getLastName());
         userEntity.setUsername(registerRequest.getUsername());
-        userEntity.setPassword(hashPassword(registerRequest.getPassword()));
+        userEntity.setPassword(hashString(registerRequest.getPassword()));
         userEntity.setCreatedAt(LocalDateTime.now());
         userEntity.setToken(generateToken());
 
@@ -58,7 +66,7 @@ public class UserService {
         return userEntity;
     }
 
-    public String hashPassword(String rawPassword) {
+    public String hashString(String rawPassword) {
         var spec = new PBEKeySpec(rawPassword.toCharArray(), authConfiguration.getSalt().getBytes(), 65536, 128);
 
         SecretKeyFactory factory;
@@ -80,7 +88,7 @@ public class UserService {
         if (loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
             throw new InvalidCredentialsException();
         }
-        var hashedPassword = hashPassword(loginRequest.getPassword());
+        var hashedPassword = hashString(loginRequest.getPassword());
         var userEntity = userRepository.findByUsernameAndPassword(loginRequest.getUsername(), hashedPassword);
         if (userEntity.isEmpty()) {
             throw new UserIsMissingException();
@@ -159,6 +167,12 @@ public class UserService {
         }
 
         return true;
+    }
+
+    public String sendLinkToUser(String toUser) {
+        var subject = "Registration Mail";
+        var body = "click this link to get to registraion page";
+        return emailSenderService.sendEmail(toUser, subject, body);
     }
 
 }

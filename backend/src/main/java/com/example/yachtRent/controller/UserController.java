@@ -3,6 +3,7 @@ package com.example.yachtRent.controller;
 import com.example.yachtRent.annotation.ApiPrefixController;
 import com.example.yachtRent.entity.UserEntity;
 import com.example.yachtRent.model.User;
+import com.example.yachtRent.request.AdminRegistrationRequest;
 import com.example.yachtRent.request.LoginRequest;
 import com.example.yachtRent.request.RegisterRequest;
 import com.example.yachtRent.request.UserRoleRequest;
@@ -60,6 +61,12 @@ public class UserController {
     public ResponseEntity<String> giveRoleToUser(@RequestBody UserRoleRequest userRoleRequest) {
         userService.addRoleToUser(userRoleRequest.getUserId(), userRoleRequest.getRoleId());
         return ResponseEntity.ok("Role has been given to use");
+    }
+
+    @PostMapping("users/send-email")
+    public ResponseEntity<String> sendRegistrationMail(@RequestBody AdminRegistrationRequest registrationRequest) {
+        var response = userService.sendLinkToUser(registrationRequest.getEmail());
+        return ResponseEntity.ok(response);
     }
 
 

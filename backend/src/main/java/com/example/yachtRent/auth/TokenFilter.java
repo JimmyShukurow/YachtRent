@@ -20,6 +20,8 @@ public class TokenFilter extends OncePerRequestFilter {
     public static final String AUTH_HEADER = "Authorization";
     public static final String LOGIN_PATH = "/api/v1/users/login";
     public static final String REGISTER_PATH = "/api/v1/users/register";
+    public static final String ADMIN_REGISTER_PATH = "/api/v1/users/send-email";
+
     public static final String YACHT_PATH = "/api/v1/yachts/**";
     private static final String ADD_ROLE_TO_USER_PATH = "/api/v1/users/add-role";
 
@@ -45,6 +47,7 @@ public class TokenFilter extends OncePerRequestFilter {
         if (
                 request.getRequestURI().equals(LOGIN_PATH) ||
                 request.getRequestURI().equals(REGISTER_PATH) ||
+                request.getRequestURI().equals(ADMIN_REGISTER_PATH) ||
                 (securityConfiguration.allowedPattern(request.getRequestURI(), YACHT_PATH)&& request.getMethod().equalsIgnoreCase("get"))
             )
         {

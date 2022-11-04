@@ -9,7 +9,6 @@ const app = createApp(App);
 app.use(pinia);
 
 const user = useUserStore();
-console.log(user.getToken);
 
 const routes: RouteRecordRaw[] = [
   {
@@ -42,6 +41,10 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'login',
         component: () => import('pages/admin/user/LoginPage.vue'),
+      },
+      {
+        path: 'register/{hash}',
+        component: () => import('pages/admin/user/AdminRegistrationPage.vue'),
       },
     ],
   },

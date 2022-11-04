@@ -6,11 +6,11 @@
         <q-toolbar-title>
           Quasar App
         </q-toolbar-title>
-
+        <q-btn color="secondary" label="logout" @click="logout()" />
       </q-toolbar>
     </q-header>
 
-    <q-drawer v-model="leftDrawerOpen" show-if-above bordered>
+    <q-drawer show-if-above bordered>
       <q-list>
         <q-item-label header>
           Essential Links
@@ -35,27 +35,24 @@
   </q-layout>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
+<script setup lang="ts">
+import axios from 'axios';
+import { useUserStore } from 'src/stores/user-store';
 
-export default defineComponent({
-  name: 'AdminLayout',
+const userStore = useUserStore()
+const url = import.meta.env.VITE_BACKEND_URL
 
 
-  setup() {
-    const leftDrawerOpen = ref(false)
-    const pages = [
-      { name: 'Yachts', url: '/yachts' },
-      { name: 'Users', url: '/users' }
-    ]
+function logout() {
+  console.log(process.env);
 
-    return {
-      pages,
-      leftDrawerOpen,
-      toggleLeftDrawer() {
-        leftDrawerOpen.value = !leftDrawerOpen.value
-      }
-    }
-  }
-});
+  axios.post(url + 'users/logout', {}, { headers: { Authorization: `Bearer ${userStore.getToken}` } })
+    .then((res) => { console.log(res); userStore.deleteUser() })
+}
+
+const pages = [
+  { name: 'Yachts', url: '/yachts' },
+  { name: 'Users', url: '/users' }
+]
+
 </script>

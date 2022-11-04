@@ -14,7 +14,6 @@ public class YachtRentApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(YachtRentApplication.class, args);
 	}
-
 }
 
 
