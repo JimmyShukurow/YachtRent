@@ -43,7 +43,7 @@ const routes: RouteRecordRaw[] = [
         component: () => import('pages/admin/user/LoginPage.vue'),
       },
       {
-        path: 'register/{hash}',
+        path: 'register/:hash',
         component: () => import('pages/admin/user/AdminRegistrationPage.vue'),
       },
     ],

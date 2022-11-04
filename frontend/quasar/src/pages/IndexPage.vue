@@ -22,8 +22,10 @@ export default defineComponent({
 
   setup() {
     const yachts = ref(null);
+    const url = import.meta.env.VITE_BACKEND_URL
+
     onMounted(() => {
-      return axios.get('http://localhost:8080/api/v1/yachts/all').then((response) => {
+      return axios.get(url + 'yachts/all').then((response) => {
         yachts.value = response.data;
 
       })

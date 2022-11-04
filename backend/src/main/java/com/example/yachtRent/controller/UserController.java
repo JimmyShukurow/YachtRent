@@ -8,18 +8,21 @@ import com.example.yachtRent.request.LoginRequest;
 import com.example.yachtRent.request.RegisterRequest;
 import com.example.yachtRent.request.UserRoleRequest;
 import com.example.yachtRent.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 import javax.servlet.http.HttpServletRequest;
+import javax.websocket.server.PathParam;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.util.List;
 
 @RestController
 @ApiPrefixController
+@Slf4j
 public class UserController {
 
     private UserService userService;
@@ -67,6 +70,12 @@ public class UserController {
     public ResponseEntity<String> sendRegistrationMail(@RequestBody AdminRegistrationRequest registrationRequest) {
         var response = userService.sendLinkToUser(registrationRequest.getEmail());
         return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("users/check-link/{hash}")
+    public ResponseEntity<String> chechHashOfRegistrationLink(@PathVariable String hash) {
+        userService.checkIfHashExists(hash);
+        return ResponseEntity.ok("Hash is past check");
     }
 
 

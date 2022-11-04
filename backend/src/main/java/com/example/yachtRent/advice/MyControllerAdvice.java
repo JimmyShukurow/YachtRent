@@ -33,11 +33,18 @@ public class MyControllerAdvice {
         return new ResponseEntity<String>("There is no role like this", HttpStatus.BAD_REQUEST);
 
     }
+
     @ExceptionHandler(RoleAlreadyAddedToUserException.class)
-        public ResponseEntity<String> handleMissingUser(RoleAlreadyAddedToUserException roleAlreadyAddedToUserException) {
+    public ResponseEntity<String> handleMissingUser(RoleAlreadyAddedToUserException roleAlreadyAddedToUserException) {
 
-            return new ResponseEntity<String>("This user Already has this role", HttpStatus.BAD_REQUEST);
+        return new ResponseEntity<String>("This user Already has this role", HttpStatus.BAD_REQUEST);
 
-        }
+    }
+    @ExceptionHandler(LinkHasExpiredException.class)
+    public ResponseEntity<String> linkIsExpired(LinkHasExpiredException linkHasExpiredException) {
+
+        return new ResponseEntity<String>("This link has expired", HttpStatus.BAD_REQUEST);
+
+    }
 
 }

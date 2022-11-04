@@ -21,12 +21,15 @@
       </q-tab-panel>
 
       <q-tab-panel name="register">
-        <h3>Get Registration Mail</h3>
-        <q-input v-model="userEmail.email" type="email" label="Email" class="login-form" />
+        <form @submit.prevent="getEmail">
+          <h3>Get Registration Mail</h3>
+          <q-input v-model="userEmail.email" type="email" label="Email" class="login-form" />
 
-        <div class="q-mt-lg row justify-between">
-          <q-btn color="primary" icon="login" label="Get" @click="getEmial" class="q-mr-xl" />
-        </div>
+          <div class="q-mt-lg row justify-between">
+            <q-btn color="primary" type="submit" icon="login" label="Get" class="q-mr-xl" />
+          </div>
+        </form>
+
       </q-tab-panel>
     </q-tab-panels>
 
@@ -38,7 +41,6 @@
 
 <script setup lang="ts">
 import axios from 'axios';
-import { data } from 'browserslist';
 import { useUserStore } from 'src/stores/user-store';
 import { reactive, ref } from 'vue';
 
@@ -53,7 +55,6 @@ const email = ref('')
 const userEmail = reactive({ email })
 const tab = ref('login')
 const url = import.meta.env.VITE_BACKEND_URL
-const myIp = ref('')
 
 function submit() {
 
@@ -66,9 +67,8 @@ function submit() {
 
 
 
-function getEmial() {
-  axios.get('https://www.cloudflare.com/cdn-cgi/trace').then(res => res.json({ data }))
-  axios.post(url + 'users/send-email', userEmail, { headers: { myIP: myIp } }).then((res) => {
+function getEmail() {
+  axios.post(url + 'users/send-email', userEmail).then((res) => {
     console.log(res);
 
   })

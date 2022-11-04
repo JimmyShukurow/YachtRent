@@ -21,6 +21,7 @@ public class TokenFilter extends OncePerRequestFilter {
     public static final String LOGIN_PATH = "/api/v1/users/login";
     public static final String REGISTER_PATH = "/api/v1/users/register";
     public static final String ADMIN_REGISTER_PATH = "/api/v1/users/send-email";
+    public static final String ADMIN_REGISTER_PATH_CHECK_HASH = "/api/v1/users/check-link/**";
 
     public static final String YACHT_PATH = "/api/v1/yachts/**";
     private static final String ADD_ROLE_TO_USER_PATH = "/api/v1/users/add-role";
@@ -48,6 +49,7 @@ public class TokenFilter extends OncePerRequestFilter {
                 request.getRequestURI().equals(LOGIN_PATH) ||
                 request.getRequestURI().equals(REGISTER_PATH) ||
                 request.getRequestURI().equals(ADMIN_REGISTER_PATH) ||
+                securityConfiguration.allowedPattern(request.getRequestURI(), ADMIN_REGISTER_PATH_CHECK_HASH) ||
                 (securityConfiguration.allowedPattern(request.getRequestURI(), YACHT_PATH)&& request.getMethod().equalsIgnoreCase("get"))
             )
         {
@@ -57,7 +59,6 @@ public class TokenFilter extends OncePerRequestFilter {
 
         var token = request.getHeader(AUTH_HEADER);
 
-        log.info(token);
         if (token == null || token.isBlank()) {
             response.setStatus(401);
             return;
@@ -74,7 +75,6 @@ public class TokenFilter extends OncePerRequestFilter {
         userService.validateToken(Long.valueOf(id), tokenValue);
         request.setAttribute("userId",Long.parseLong(id));
 
-        log.info(request.getRequestURI());
         if (
                 (
                         request.getRequestURI().equals(ADD_ROLE_TO_USER_PATH) ||

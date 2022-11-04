@@ -4,23 +4,24 @@ import com.example.yachtRent.config.AuthConfiguration;
 import com.example.yachtRent.entity.RoleEntity;
 import com.example.yachtRent.entity.UserEntity;
 import com.example.yachtRent.entity.UserRoleEntity;
-import com.example.yachtRent.exception.InvalidCredentialsException;
-import com.example.yachtRent.exception.RoleAlreadyAddedToUserException;
-import com.example.yachtRent.exception.RoleIsMissingException;
-import com.example.yachtRent.exception.UserIsMissingException;
+import com.example.yachtRent.exception.*;
 import com.example.yachtRent.repository.RoleRepository;
 import com.example.yachtRent.repository.UserRepository;
 import com.example.yachtRent.repository.UserRoleRepository;
 import com.example.yachtRent.request.LoginRequest;
 import com.example.yachtRent.request.RegisterRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.crypto.SecretKeyFactory;
@@ -37,6 +38,11 @@ public class UserService {
 
     private UserRoleRepository userRoleRepository;
     private AuthConfiguration authConfiguration;
+
+
+    private HashMap<String, OffsetDateTime> hashes= new HashMap<>();
+    @Value("${frontend.url}")
+    private String frontendURL;
 
     public UserService(
             UserRepository userRepository,
@@ -170,9 +176,27 @@ public class UserService {
     }
 
     public String sendLinkToUser(String toUser) {
+        var hashRandom = this.generateToken();
+        while (hashRandom.contains("/")){
+            hashRandom = this.generateToken();
+        }
+        hashes.put(hashRandom, OffsetDateTime.now());
         var subject = "Registration Mail";
-        var body = "click this link to get to registraion page";
+        var body = "click this link to get to registraion page \n" + frontendURL+"admin/register/"+hashRandom;
         return emailSenderService.sendEmail(toUser, subject, body);
+    }
+
+    @Scheduled(fixedDelayString = "PT1M")
+    public void deletingOldDataFromHashes() {
+        hashes.entrySet().removeIf(entry -> entry.getValue().isBefore(OffsetDateTime.now().minusDays(1)));
+    }
+
+
+    public boolean checkIfHashExists(String hash) {
+        if (!hashes.containsKey(hash)) {
+            throw new LinkHasExpiredException();
+        }
+        return true;
     }
 
 }
