@@ -12,6 +12,7 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Arrays;
 
 @Component
 @Profile("!test")
@@ -19,7 +20,8 @@ import java.io.IOException;
 public class TokenFilter extends OncePerRequestFilter {
     public static final String AUTH_HEADER = "Authorization";
     public static final String LOGIN_PATH = "/api/v1/users/login";
-    public static final String REGISTER_PATH = "/api/v1/users/register";
+    public static final String USER_REGISTER_PATH = "/api/v1/users/register";
+    public static final String CLIENT_REGISTER_PATH = "/api/v1/client/register";
     public static final String ADMIN_REGISTER_PATH = "/api/v1/users/send-email";
     public static final String ADMIN_REGISTER_PATH_CHECK_HASH = "/api/v1/users/check-link/**";
 
@@ -47,8 +49,9 @@ public class TokenFilter extends OncePerRequestFilter {
         }
         if (
                 request.getRequestURI().equals(LOGIN_PATH) ||
-                request.getRequestURI().equals(REGISTER_PATH) ||
+                request.getRequestURI().equals(USER_REGISTER_PATH) ||
                 request.getRequestURI().equals(ADMIN_REGISTER_PATH) ||
+                request.getRequestURI().equals(CLIENT_REGISTER_PATH) ||
                 securityConfiguration.allowedPattern(request.getRequestURI(), ADMIN_REGISTER_PATH_CHECK_HASH) ||
                 (securityConfiguration.allowedPattern(request.getRequestURI(), YACHT_PATH)&& request.getMethod().equalsIgnoreCase("get"))
             )
@@ -74,6 +77,8 @@ public class TokenFilter extends OncePerRequestFilter {
         var tokenValue = tokenParts[1];
         userService.validateToken(Long.valueOf(id), tokenValue);
         request.setAttribute("userId",Long.parseLong(id));
+        String[] roles = {"admin", "client"};
+        var checkRole  = Arrays.stream(roles).anyMatch(role-> userService.validateRole(Long.valueOf(id),role));
 
         if (
                 (
@@ -81,7 +86,7 @@ public class TokenFilter extends OncePerRequestFilter {
                         request.getMethod().equalsIgnoreCase("put") ||
                         request.getMethod().equalsIgnoreCase("delete")
 
-                ) && !userService.validateRole(Long.valueOf(id), "admin")) {
+                ) && !checkRole) {
             response.setStatus(403);
             return;
         }

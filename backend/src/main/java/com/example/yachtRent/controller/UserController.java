@@ -67,7 +67,7 @@ public class UserController {
     }
 
     @PostMapping("users/send-email")
-    public ResponseEntity<String> sendRegistrationMail(@RequestBody AdminRegistrationRequest registrationRequest) {
+    public ResponseEntity<String> sendRegistrationMail(@RequestBody AdminRegistrationRequest registrationRequest) throws Exception {
         var response = userService.sendLinkToUser(registrationRequest.getEmail());
         return ResponseEntity.ok(response);
     }
@@ -76,6 +76,14 @@ public class UserController {
     public ResponseEntity<String> chechHashOfRegistrationLink(@PathVariable String hash) {
         userService.checkIfHashExists(hash);
         return ResponseEntity.ok("Hash is past check");
+    }
+
+    @PostMapping("client/register")
+    public ResponseEntity<User> registerClient(@RequestBody RegisterRequest registerRequest) {
+        var userEntity = userService.register(registerRequest);
+        userService.addRoleToUser(userEntity.getId(), 3L);
+
+        return ResponseEntity.ok(User.toModel(userEntity));
     }
 
 

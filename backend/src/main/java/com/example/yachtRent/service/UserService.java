@@ -1,10 +1,12 @@
 package com.example.yachtRent.service;
 
 import com.example.yachtRent.config.AuthConfiguration;
+import com.example.yachtRent.entity.InvitationLinkEntity;
 import com.example.yachtRent.entity.RoleEntity;
 import com.example.yachtRent.entity.UserEntity;
 import com.example.yachtRent.entity.UserRoleEntity;
 import com.example.yachtRent.exception.*;
+import com.example.yachtRent.repository.InvitationLinkRepository;
 import com.example.yachtRent.repository.RoleRepository;
 import com.example.yachtRent.repository.UserRepository;
 import com.example.yachtRent.repository.UserRoleRepository;
@@ -15,6 +17,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
@@ -23,6 +27,7 @@ import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
@@ -34,13 +39,14 @@ public class UserService {
 
     private UserRepository userRepository;
     private RoleRepository roleRepository;
+    private InvitationLinkRepository invitationLinkRepository;
     private EmailSenderService emailSenderService;
 
     private UserRoleRepository userRoleRepository;
     private AuthConfiguration authConfiguration;
 
 
-    private HashMap<String, OffsetDateTime> hashes= new HashMap<>();
+
     @Value("${frontend.url}")
     private String frontendURL;
 
@@ -49,13 +55,15 @@ public class UserService {
             RoleRepository roleRepository,
             UserRoleRepository userRoleRepository,
             AuthConfiguration authConfiguration,
-            EmailSenderService emailSenderService
+            EmailSenderService emailSenderService,
+            InvitationLinkRepository invitationLinkRepository
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
         this.authConfiguration = authConfiguration;
         this.emailSenderService = emailSenderService;
+        this.invitationLinkRepository = invitationLinkRepository;
     }
 
     public UserEntity register(RegisterRequest registerRequest) {
@@ -175,27 +183,36 @@ public class UserService {
         return true;
     }
 
-    public String sendLinkToUser(String toUser) {
+    public String sendLinkToUser(String toUser) throws Exception{
         var hashRandom = this.generateToken();
-        while (hashRandom.contains("/")){
-            hashRandom = this.generateToken();
-        }
-        hashes.put(hashRandom, OffsetDateTime.now());
+        var url = URLEncoder.encode(hashRandom, StandardCharsets.UTF_8);
+
+        var entity = new InvitationLinkEntity();
+        entity.setHash(url);
+        entity.setExpireAt(OffsetDateTime.now().plusDays(1));
+        entity.setCreatedAt(OffsetDateTime.now());
+        invitationLinkRepository.save(entity);
+
         var subject = "Registration Mail";
-        var body = "click this link to get to registraion page \n" + frontendURL+"admin/register/"+hashRandom;
+        var body = "click this link to get to registraion page \n" + frontendURL+"admin/register/"+ url;
         return emailSenderService.sendEmail(toUser, subject, body);
     }
 
-    @Scheduled(fixedDelayString = "PT1M")
-    public void deletingOldDataFromHashes() {
-        hashes.entrySet().removeIf(entry -> entry.getValue().isBefore(OffsetDateTime.now().minusDays(1)));
+    public List<String> getUserRoles(UserEntity userEntity) {
+        var roles = roleRepository.findRolesOfUser(userEntity.getId()).get();
+        return roles.stream().map(roleEntitie -> roleEntitie.getName()).collect(Collectors.toList());
     }
 
 
     public boolean checkIfHashExists(String hash) {
-        if (!hashes.containsKey(hash)) {
-            throw new LinkHasExpiredException();
+        hash = URLEncoder.encode(hash, StandardCharsets.UTF_8);
+        var entity = invitationLinkRepository.findByHash(hash);
+        var check = entity.getExpireAt().isBefore(OffsetDateTime.now());
+
+        if (check) {
+            return false;
         }
+
         return true;
     }
 

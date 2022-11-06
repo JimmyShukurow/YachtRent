@@ -1,5 +1,6 @@
 package com.example.yachtRent.entity;
 
+import com.example.yachtRent.repository.UserRoleRepository;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -7,13 +8,13 @@ import lombok.Setter;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,5 +26,13 @@ public class UserEntity {
     private String token;
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
+
+    @ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.EAGER)
+    @JoinTable(name="user_roles",
+            joinColumns = {@JoinColumn (name="userId", referencedColumnName="id")},
+            inverseJoinColumns = {@JoinColumn(name="roleId", referencedColumnName="id")}
+    )
+    private List<RoleEntity> roles;
+
 
 }

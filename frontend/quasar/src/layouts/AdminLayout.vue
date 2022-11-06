@@ -47,7 +47,11 @@ function logout() {
   console.log(process.env);
 
   axios.post(url + 'users/logout', {}, { headers: { Authorization: `Bearer ${userStore.getToken}` } })
-    .then((res) => { console.log(res); userStore.deleteUser() })
+    .then(() => {
+      userStore.deleteUser()
+      // router.push('/')
+      location.replace('/')
+    })
 }
 
 const pages = [

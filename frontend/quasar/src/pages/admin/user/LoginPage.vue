@@ -11,13 +11,16 @@
 
     <q-tab-panels v-model="tab" animated class="q-mt-xl ">
       <q-tab-panel name="login">
-        <h1>Login here</h1>
-        <q-input v-model="user.username" type="text" label="Username" class="login-form" />
-        <q-input v-model="user.password" type="password" label="Password" class="login-form" />
+        <q-form @submit="submit" @refresh="submit" class="q-gutter-md">
+          <h1>Login here</h1>
+          <q-input v-model="user.username" type="text" label="Username" class="login-form" />
+          <q-input v-model="user.password" type="password" label="Password" class="login-form" />
 
-        <div class="q-mt-lg row justify-between">
-          <q-btn color="primary" icon="login" label="Enter" @click="submit" class="q-mr-xl" />
-        </div>
+          <div class="q-mt-lg row justify-between">
+            <q-btn color="primary" icon="login" label="Enter" type="submit" class="q-mr-xl" />
+          </div>
+        </q-form>
+
       </q-tab-panel>
 
       <q-tab-panel name="register">
@@ -32,10 +35,6 @@
 
       </q-tab-panel>
     </q-tab-panels>
-
-
-
-
   </div>
 </template>
 
@@ -43,6 +42,8 @@
 import axios from 'axios';
 import { useUserStore } from 'src/stores/user-store';
 import { reactive, ref } from 'vue';
+import { showNotif } from 'src/components/Notify';
+
 
 const userStore = useUserStore();
 const username = ref('')
@@ -59,9 +60,18 @@ const url = import.meta.env.VITE_BACKEND_URL
 function submit() {
 
   axios.post(url + 'users/login', user).then((res) => {
+    console.log(res.data);
+
     userStore.setName(res.data.fullName)
     userStore.setUsername(res.data.username)
     userStore.setToken(res.data.token)
+    userStore.setRoles(res.data.roles)
+    showNotif('Welcome', 'positive')
+    location.reload();
+
+  }).catch(error => {
+    showNotif(error.response.data, 'negative')
+
   })
 }
 
@@ -70,7 +80,6 @@ function submit() {
 function getEmail() {
   axios.post(url + 'users/send-email', userEmail).then((res) => {
     console.log(res);
-
   })
 }
 
