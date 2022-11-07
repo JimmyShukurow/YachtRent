@@ -208,7 +208,7 @@ public class UserService {
         var entity = invitationLinkRepository.findByHash(hash);
         var check = entity != null && entity.getExpireAt().isBefore(OffsetDateTime.now());
 
-        if (!check) {
+        if (check) {
             throw new RuntimeException();
         }
 

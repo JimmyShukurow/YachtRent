@@ -35,6 +35,8 @@ public class UserController {
     public ResponseEntity<User> register(@RequestBody RegisterRequest registerRequest) {
 
         var userEntity = userService.register(registerRequest);
+        userService.addRoleToUser(userEntity.getId(), 2L);
+
         return ResponseEntity.ok(User.toModel(userEntity));
     }
 
