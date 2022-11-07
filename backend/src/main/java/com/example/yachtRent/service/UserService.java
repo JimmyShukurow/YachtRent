@@ -27,6 +27,7 @@ import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import javax.crypto.SecretKeyFactory;
@@ -184,17 +185,16 @@ public class UserService {
     }
 
     public String sendLinkToUser(String toUser) throws Exception{
-        var hashRandom = this.generateToken();
-        var url = URLEncoder.encode(hashRandom, StandardCharsets.UTF_8);
+        var hashRandom = generateRandomAlphaNumeric();
 
         var entity = new InvitationLinkEntity();
-        entity.setHash(url);
+        entity.setHash(hashRandom);
         entity.setExpireAt(OffsetDateTime.now().plusDays(1));
         entity.setCreatedAt(OffsetDateTime.now());
         invitationLinkRepository.save(entity);
 
         var subject = "Registration Mail";
-        var body = "click this link to get to registraion page \n" + frontendURL+"admin/register/"+ url;
+        var body = "click this link to get to registration page \n" + frontendURL+"admin/register/"+ hashRandom;
         return emailSenderService.sendEmail(toUser, subject, body);
     }
 
@@ -204,16 +204,18 @@ public class UserService {
     }
 
 
-    public boolean checkIfHashExists(String hash) {
-        hash = URLEncoder.encode(hash, StandardCharsets.UTF_8);
+    public void checkIfHashExists(String hash) {
         var entity = invitationLinkRepository.findByHash(hash);
-        var check = entity.getExpireAt().isBefore(OffsetDateTime.now());
+        var check = entity != null && entity.getExpireAt().isBefore(OffsetDateTime.now());
 
-        if (check) {
-            return false;
+        if (!check) {
+            throw new RuntimeException();
         }
 
-        return true;
+    }
+
+    public String generateRandomAlphaNumeric() {
+        return UUID.randomUUID().toString().replaceAll("-", "");
     }
 
 }

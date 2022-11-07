@@ -84,9 +84,9 @@ const user = reactive({
 
 onBeforeMount(() => {
 
-  let hash = route.params.hash;
+  let hash = route.params.hash as string;
 
-  axios.post(url + 'users/check-link/' + hash).then(res => {
+  axios.post(url + 'users/check-link/' + encodeURIComponent(hash)).then(res => {
     console.log(res.status);
 
   }).catch(() => {
