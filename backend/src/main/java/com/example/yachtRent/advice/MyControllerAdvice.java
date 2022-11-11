@@ -47,4 +47,17 @@ public class MyControllerAdvice {
 
     }
 
+    @ExceptionHandler(UsernameIsAlreadyTakenException.class)
+    public ResponseEntity<String> usernameIsTaken(UsernameIsAlreadyTakenException usernameIsAlreadyTakenException) {
+
+        return new ResponseEntity<String>("This is name is already taken", HttpStatus.BAD_REQUEST);
+
+    }
+    @ExceptionHandler(PasswordIsNotComplexException.class)
+    public ResponseEntity<String> passwordIsNotComplex(PasswordIsNotComplexException passwordIsNotComplexException) {
+
+        return new ResponseEntity<String>("Your password is weak!", HttpStatus.BAD_REQUEST);
+
+    }
+
 }

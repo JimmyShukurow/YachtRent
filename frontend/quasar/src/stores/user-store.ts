@@ -6,7 +6,7 @@ export const useUserStore = defineStore('user', {
     name: useStorage('name', ''),
     username: useStorage('username', ''),
     token: useStorage('token', ''),
-    roles: useStorage('roles', []),
+    roles: [],
   }),
   getters: {
     getName: (state) => state.name,

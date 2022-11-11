@@ -27,12 +27,7 @@ public class UserEntity {
     private LocalDateTime createdAt;
     private LocalDateTime deletedAt;
 
-    @ManyToMany(cascade=CascadeType.ALL,fetch=FetchType.EAGER)
-    @JoinTable(name="user_roles",
-            joinColumns = {@JoinColumn (name="userId", referencedColumnName="id")},
-            inverseJoinColumns = {@JoinColumn(name="roleId", referencedColumnName="id")}
-    )
-    private List<RoleEntity> roles;
+
 
 
 }

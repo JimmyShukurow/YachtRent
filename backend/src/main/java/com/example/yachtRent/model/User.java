@@ -24,8 +24,6 @@ public class User {
         user.setFullName(userEntity.getFirstName() + " " + userEntity.getLastName());
         user.setUsername(userEntity.getUsername());
         user.setToken(userEntity.getId()+"_"+userEntity.getToken());
-        var roles = userEntity.getRoles();
-        user.setRoles(roles.stream().map(RoleEntity::getName).collect(Collectors.toList()));
 
         return user;
     }

@@ -1,6 +1,5 @@
 package com.example.yachtRent.service;
 
-import com.example.yachtRent.config.AuthConfiguration;
 import com.example.yachtRent.entity.InvitationLinkEntity;
 import com.example.yachtRent.entity.RoleEntity;
 import com.example.yachtRent.entity.UserEntity;
@@ -14,40 +13,23 @@ import com.example.yachtRent.request.LoginRequest;
 import com.example.yachtRent.request.RegisterRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidKeySpecException;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.Base64;
-import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
-
-import javax.crypto.SecretKeyFactory;
-import javax.crypto.spec.PBEKeySpec;
 
 
 @Service
 @Slf4j
-public class UserService {
+public class UserService extends HelperFunction {
 
-    private UserRepository userRepository;
-    private RoleRepository roleRepository;
-    private InvitationLinkRepository invitationLinkRepository;
-    private EmailSenderService emailSenderService;
-
-    private UserRoleRepository userRoleRepository;
-    private AuthConfiguration authConfiguration;
-
-
-
+    private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
+    private final InvitationLinkRepository invitationLinkRepository;
+    private  final EmailSenderService emailSenderService;
+    private final UserRoleRepository userRoleRepository;
     @Value("${frontend.url}")
     private String frontendURL;
 
@@ -55,19 +37,24 @@ public class UserService {
             UserRepository userRepository,
             RoleRepository roleRepository,
             UserRoleRepository userRoleRepository,
-            AuthConfiguration authConfiguration,
             EmailSenderService emailSenderService,
             InvitationLinkRepository invitationLinkRepository
     ) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userRoleRepository = userRoleRepository;
-        this.authConfiguration = authConfiguration;
         this.emailSenderService = emailSenderService;
         this.invitationLinkRepository = invitationLinkRepository;
     }
 
     public UserEntity register(RegisterRequest registerRequest) {
+        var user = userRepository.findByUsername(registerRequest.getUsername());
+        if (user.isPresent()) {
+            throw new UsernameIsAlreadyTakenException();
+        }
+        if (checkPasswordComplexity(registerRequest.getPassword())) {
+            throw new PasswordIsNotComplexException();
+        }
         var userEntity = new UserEntity();
         userEntity.setFirstName(registerRequest.getFirstName());
         userEntity.setLastName(registerRequest.getLastName());
@@ -76,30 +63,11 @@ public class UserService {
         userEntity.setCreatedAt(LocalDateTime.now());
         userEntity.setToken(generateToken());
 
-
         userRepository.save(userEntity);
         return userEntity;
     }
 
-    public String hashString(String rawPassword) {
-        var spec = new PBEKeySpec(rawPassword.toCharArray(), authConfiguration.getSalt().getBytes(), 65536, 128);
-
-        SecretKeyFactory factory;
-        try {
-            factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA1");
-        } catch (NoSuchAlgorithmException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            byte[] hash = factory.generateSecret(spec).getEncoded();
-            return new String(hash);
-        } catch (InvalidKeySpecException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public UserEntity authonticate(LoginRequest loginRequest) {
+    public UserEntity authenticate(LoginRequest loginRequest) {
         if (loginRequest.getUsername() == null || loginRequest.getPassword() == null) {
             throw new InvalidCredentialsException();
         }
@@ -110,21 +78,13 @@ public class UserService {
         }
         var entity = userEntity.get();
         entity.setToken(generateToken());
-        userRepository.save(entity);
 
+        userRepository.save(entity);
         return userEntity.get();
     }
 
     public List<UserEntity> getAll() {
         return (List)userRepository.findAll();
-    }
-
-    public String generateToken() {
-        SecureRandom secureRandom = new SecureRandom();
-        byte[] token = new byte[16];
-        secureRandom.nextBytes(token);
-
-        return Base64.getEncoder().encodeToString(token);
     }
 
     public void logout(Long id) {
@@ -154,6 +114,7 @@ public class UserService {
         var user = userRepository.findById(userId);
         var role = roleRepository.findById(roleId);
         var roleUser = userRoleRepository.findByUserIdAndRoleId(userId, roleId);
+
         if (user.isEmpty()) {
             throw new UserIsMissingException();
         }
@@ -186,13 +147,11 @@ public class UserService {
 
     public String sendLinkToUser(String toUser) throws Exception{
         var hashRandom = generateRandomAlphaNumeric();
-
         var entity = new InvitationLinkEntity();
         entity.setHash(hashRandom);
         entity.setExpireAt(OffsetDateTime.now().plusDays(1));
         entity.setCreatedAt(OffsetDateTime.now());
         invitationLinkRepository.save(entity);
-
         var subject = "Registration Mail";
         var body = "click this link to get to registration page \n" + frontendURL+"admin/register/"+ hashRandom;
         return emailSenderService.sendEmail(toUser, subject, body);
@@ -203,19 +162,12 @@ public class UserService {
         return roles.stream().map(roleEntitie -> roleEntitie.getName()).collect(Collectors.toList());
     }
 
-
     public void checkIfHashExists(String hash) {
         var entity = invitationLinkRepository.findByHash(hash);
         var check = entity != null && entity.getExpireAt().isBefore(OffsetDateTime.now());
-
         if (check) {
             throw new RuntimeException();
         }
 
     }
-
-    public String generateRandomAlphaNumeric() {
-        return UUID.randomUUID().toString().replaceAll("-", "");
-    }
-
 }

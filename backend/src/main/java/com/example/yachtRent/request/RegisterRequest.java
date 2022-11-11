@@ -1,10 +1,10 @@
 package com.example.yachtRent.request;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
 
-@Getter
-@AllArgsConstructor
+@Data
 public class RegisterRequest {
     private String firstName;
     private String lastName;
